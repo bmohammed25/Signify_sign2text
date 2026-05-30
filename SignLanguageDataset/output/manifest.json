@@ -1,0 +1,35 @@
+{
+  "source": "verified_videos_mp4_extracted",
+  "mode": "extract_mp4",
+  "view": "frontal",
+  "target_dim": 225,
+  "splits": {
+    "train": {
+      "ok": 21715,
+      "skipped": 37
+    },
+    "val": {
+      "ok": 4731,
+      "skipped": 8
+    },
+    "test": {
+      "ok": 4549,
+      "skipped": 7
+    }
+  },
+  "format": {
+    "keypoints": "numpy (.npy), shape=(T, 225), float32",
+    "labels": "plain text, UTF-8; line i corresponds to sorted(glob('keypoints/{split}/*.npy'))[i]"
+  },
+  "dim_layout": {
+    "0:99": "pose       (33 landmarks × 3 coords)",
+    "99:162": "left_hand  (21 landmarks × 3 coords)",
+    "162:225": "right_hand (21 landmarks × 3 coords)"
+  },
+  "paths": {
+    "output_dir": "./output",
+    "csv_train": "./How2Sign/sentence_level/train/how2sign_verified_train.csv",
+    "csv_val": "./How2Sign/sentence_level/val/how2sign_verified_val.csv",
+    "csv_test": "./How2Sign/sentence_level/test/how2sign_verified_test.csv"
+  }
+}

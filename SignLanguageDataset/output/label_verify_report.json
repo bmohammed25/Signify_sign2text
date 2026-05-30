@@ -1,0 +1,62 @@
+{
+  "all_ok": true,
+  "splits": {
+    "train": {
+      "ok": true,
+      "errors": [],
+      "warnings": [],
+      "npy_count": 21715,
+      "label_count": 21715,
+      "placeholder_count": 0,
+      "placeholder_entries": [],
+      "dim_errors": [],
+      "correspondence": {
+        "checked": 21715,
+        "mismatches": 0,
+        "mismatch_entries": []
+      },
+      "first_stem": "--7E2sU6zP4_10-5-rgb_front",
+      "first_label": "And I call them decorative elements because basically all they're mean",
+      "last_stem": "fz6XzPxdo-0_3-5-rgb_front",
+      "last_label": "The benefits of stretching with a partner, is the partner will actuall"
+    },
+    "val": {
+      "ok": true,
+      "errors": [],
+      "warnings": [],
+      "npy_count": 4731,
+      "label_count": 4731,
+      "placeholder_count": 0,
+      "placeholder_entries": [],
+      "dim_errors": [],
+      "correspondence": {
+        "checked": 4731,
+        "mismatches": 0,
+        "mismatch_entries": []
+      },
+      "first_stem": "-00cp1iGiDw_1-5-rgb_front",
+      "first_label": "If you like to find more about my services you can visit my website ca",
+      "last_stem": "fxtkHe6zRFg_9-5-rgb_front",
+      "last_label": "Take the waist belt and wrap that all the way around you, passing it t"
+    },
+    "test": {
+      "ok": true,
+      "errors": [],
+      "warnings": [],
+      "npy_count": 4549,
+      "label_count": 4549,
+      "placeholder_count": 0,
+      "placeholder_entries": [],
+      "dim_errors": [],
+      "correspondence": {
+        "checked": 4549,
+        "mismatches": 0,
+        "mismatch_entries": []
+      },
+      "first_stem": "--8pSDeC-fg_0-5-rgb_front",
+      "first_label": "Hi.",
+      "last_stem": "fyyg6UCc-nI_12-5-rgb_front",
+      "last_label": "That is how you make a hoop earring."
+    }
+  }
+}
