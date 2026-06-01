@@ -1,0 +1,125 @@
+Environment Setup
+Step 1 — Create conda environment:
+bash
+conda create -n signify python=3.10
+conda activate signify
+
+⚠️ Important: Install PyTorch manually (Step 2) BEFORE running pip install -r requirements.txt. If you run requirements.txt first, pip will install the CPU version of PyTorch instead of the CUDA version.
+
+Step 2 — Install PyTorch with CUDA:
+bash
+pip install torch==2.5.1 torchvision==0.20.1 torchaudio==2.5.1 --index-url https://download.pytorch.org/whl/cu121
+Step 3 — Install core libraries:
+bash
+pip install opencv-python==4.9.0.80 mediapipe==0.10.14 numpy==1.26.4
+Step 4 — Install training libraries:
+bash
+pip install scikit-learn==1.4.2 matplotlib==3.8.4 seaborn==0.13.2 Pillow==10.3.0 tqdm==4.66.4
+Step 5 — Install API and utilities:
+bash
+pip install fastapi>=0.124.1 uvicorn>=0.34 python-multipart>=0.0.9 kaggle==1.6.14 python-dotenv>=1.0.1 aiofiles==23.2.1
+Step 6 — Install speech libraries:
+bash
+pip install SpeechRecognition==3.10.4 gTTS==2.5.1 pygame==2.5.2 pydub==0.25.1
+Step 7 — Install Whisper:
+bash
+pip install git+https://github.com/openai/whisper.git
+Step 8 — Install Ollama:
+•	Download and install from https://ollama.com/download — Windows installer
+•	After installation open a new terminal and pull the model:
+bash
+ollama pull llama3.2
+Step 9 — Install Ollama Python client:
+bash
+pip install ollama
+Step 10 — Verify installation:
+python
+import torch
+import cv2
+import mediapipe
+import ollama
+
+print("PyTorch:", torch.__version__)
+print("CUDA available:", torch.cuda.is_available())
+print("GPU:", torch.cuda.get_device_name(0) if torch.cuda.is_available() else "None")
+print("OpenCV:", cv2.__version__)
+print("MediaPipe:", mediapipe.__version__)
+print("Ollama:", ollama.__version__)
+print("All systems ready")
+
+Create a file called requirements.txt in your project root and paste everything below:
+txt
+# ── Core Computer Vision ──────────────────────────
+opencv-python==4.9.0.80
+mediapipe==0.10.14
+
+# ── Deep Learning ─────────────────────────────────
+# Install with CUDA separately:
+# pip install torch==2.5.1 torchvision==0.20.1 torchaudio==2.5.1 --index-url https://download.pytorch.org/whl/cu121
+torch==2.5.1
+torchvision==0.20.1
+torchaudio==2.5.1
+
+# ── Data & Math ───────────────────────────────────
+numpy==1.26.4
+scikit-learn==1.4.2
+matplotlib==3.8.4
+seaborn==0.13.2
+Pillow==10.3.0
+tqdm==4.66.4
+
+# ── API Layer ─────────────────────────────────────
+fastapi==0.111.0
+uvicorn==0.30.1
+python-multipart==0.0.9
+
+# ── Speech Layer (installed, pending use) ─────────
+SpeechRecognition==3.10.4
+gTTS==2.5.1
+pygame==2.5.2
+pydub==0.25.1
+
+# ── Whisper STT ───────────────────────────────────
+# Install separately:
+# pip install git+https://github.com/openai/whisper.git
+
+# ── Dataset & Kaggle ──────────────────────────────
+kaggle==1.6.14
+kagglehub==0.2.9
+
+# ── Utilities ─────────────────────────────────────
+python-dotenv>=1.0.1
+aiofiles==23.2.1
+
+
+
+python
+import torch
+import cv2
+import mediapipe
+import fastapi
+import numpy
+import sklearn
+import matplotlib
+import seaborn
+import PIL
+import tqdm
+import kaggle
+import whisper
+import kagglehub
+print("KaggleHub:", kagglehub.__version__)
+
+
+print("PyTorch:", torch.__version__)
+print("CUDA available:", torch.cuda.is_available())
+print("GPU:", torch.cuda.get_device_name(0) if torch.cuda.is_available() else "None")
+print("OpenCV:", cv2.__version__)
+print("MediaPipe:", mediapipe.__version__)
+print("FastAPI:", fastapi.__version__)
+print("NumPy:", numpy.__version__)
+print("Scikit-learn:", sklearn.__version__)
+print("Matplotlib:", matplotlib.__version__)
+print("Seaborn:", seaborn.__version__)
+print("Pillow:", PIL.__version__)
+print("Whisper:", whisper.__version__)
+print("✅ All systems ready for Signify")
