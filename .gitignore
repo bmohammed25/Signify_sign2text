@@ -68,3 +68,9 @@ desktop.ini
 # Project-specific
 SignLanguageDataset/verified_videos/*.mp4
 SignLanguageDataset/output/**/*.npy
+
+# Signify — dataset and model weights
+data/
+!data/.gitkeep
+models/
+!models/.gitkeep
