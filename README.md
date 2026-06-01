@@ -1,7 +1,6 @@
 # 🤟 Signify_sign2text
 
 > Real-time American Sign Language recognition powered by deep learning.
-> Fanshawe College Capstone 2026 — Group 7
 
 ---
 
@@ -36,7 +35,6 @@ The project pipeline covers dataset exploration, preprocessing, model training, 
 | Classes | 29 (A–Z + space, delete, nothing) |
 | Accuracy | **95.65%** |
 | Framework | PyTorch 2.5.1+cu121 |
-| GPU | NVIDIA Quadro T1000 4GB |
 
 ---
 
