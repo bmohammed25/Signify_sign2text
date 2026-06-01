@@ -55,7 +55,7 @@ signify/
 │
 ├── src/                        # Production .py files — live app logic
 │   ├── config.py               # Paths, constants, model config
-│   ├── setup_project.py        # Creates folder structure on first run
+│   ├── create_necessary_folders.py        # Creates folder structure on first run
 │   ├── verify_env.py           # Checks environment dependencies
 │   ├── preprocess.py           # Data transforms (reusable functions)
 │   ├── model.py                # MobileNetV2 model definition
