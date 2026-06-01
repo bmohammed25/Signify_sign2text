@@ -72,5 +72,3 @@ SignLanguageDataset/output/**/*.npy
 # Signify — dataset and model weights
 data/
 !data/.gitkeep
-models/
-!models/.gitkeep
