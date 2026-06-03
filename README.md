@@ -1,6 +1,7 @@
-# 🤟 Signify_sign2text
+# 🤟 Signify — ASL Sign Language Communication App
 
 > Real-time American Sign Language recognition powered by deep learning.
+> Open Source Project
 
 ---
 
@@ -12,15 +13,15 @@
 - [Notebooks vs Production Files](#notebooks-vs-production-files)
 - [Dataset](#dataset)
 - [Environment Setup](#environment-setup)
-- [Running the Notebooks](#running-the-notebooks)
 - [Running the App](#running-the-app)
+- [API Endpoints](#api-endpoints)
 - [Team](#team)
 
 ---
 
 ## Project Overview
 
-Signify is a real-time ASL (American Sign Language) hand sign recognition application built as a Fanshawe College Capstone project. The system uses a fine-tuned MobileNetV2 convolutional neural network to classify 29 ASL classes (A–Z, space, delete, nothing) from live webcam input.
+Signify is a real-time ASL (American Sign Language) hand sign recognition application built as a Fanshawe College Capstone project. The system uses a fine-tuned MobileNetV2 convolutional neural network to classify 29 ASL classes (A–Z, space, delete, nothing) from live webcam input. Recognized letters are assembled into natural sentences using a local LLM (phi3:mini via Ollama) and spoken aloud via text-to-speech.
 
 The project pipeline covers dataset exploration, preprocessing, model training, evaluation, and a live inference application — all documented step-by-step in numbered Jupyter notebooks.
 
@@ -33,74 +34,80 @@ The project pipeline covers dataset exploration, preprocessing, model training, 
 | Architecture | MobileNetV2 (transfer learning) |
 | Dataset | ASL Alphabet (Kaggle) |
 | Classes | 29 (A–Z + space, delete, nothing) |
-| Accuracy | **95.65%** |
+| Validation Accuracy | **99.83%** (best at epoch 19) |
 | Framework | PyTorch 2.5.1+cu121 |
+| GPU | NVIDIA Quadro T1000 4GB |
 
 ---
 
 ## Repository Structure
 
 ```
-signify/
+Signify/
 │
-├── notebooks/                  # Jupyter notebooks — training & exploration (numbered 01–08)
+├── Notebooks/                  # Jupyter notebooks — training & exploration (numbered 01–07)
 │   ├── 01_explore_dataset.ipynb
-│   ├── 02_preprocess_data.ipynb
-│   ├── 03_build_model.ipynb
-│   ├── 04_train_model.ipynb
-│   ├── 05_evaluate_model.ipynb
-│   ├── 06_confusion_matrix.ipynb
-│   ├── 07_test_inference.ipynb
-│   └── 08_export_model.ipynb
+│   ├── 02_preprocess.ipynb         ⚠️ Early landmark-based approach (not final pipeline)
+│   ├── 03_augment.ipynb            ⚠️ Early landmark-based approach (not final pipeline)
+│   ├── 04_model.ipynb              ⚠️ Early ANN approach (not final pipeline)
+│   ├── 05_train_mobilenet.ipynb    ✅ Final model training
+│   ├── 06_evaluate.ipynb           ✅ Model evaluation
+│   └── 07_camera_test.ipynb        ✅ Live camera inference test
 │
-├── src/                        # Production .py files — live app logic
-│   ├── config.py               # Paths, constants, model config
-│   ├── create_necessary_folders.py        # Creates folder structure on first run
-│   ├── verify_env.py           # Checks environment dependencies
-│   ├── preprocess.py           # Data transforms (reusable functions)
-│   ├── model.py                # MobileNetV2 model definition
-│   ├── train.py                # Training loop
-│   ├── evaluate.py             # Evaluation metrics
-│   └── app.py                  # Live webcam inference app
+├── Agents/                     # Production agent pipeline
+│   ├── __init__.py
+│   ├── vision_agent.py         # Hand detection & crop (MediaPipe)
+│   ├── landmark_agent.py       # Quality gate
+│   ├── recognition_agent.py    # ASL letter classification (MobileNetV2)
+│   ├── language_agent.py       # Sentence assembly (phi3:mini via Ollama)
+│   └── speech_agent.py         # Text to speech (pyttsx3)
 │
-├── data/                       # Dataset directory (not committed to Git)
-│   └── asl_alphabet/
-│       ├── asl_alphabet_train/
-│       └── asl_alphabet_test/
+├── API/                        # FastAPI server
+│   ├── __init__.py
+│   └── main.py                 # All endpoints — run this to start the server
 │
-├── models/                     # Saved model weights (not committed to Git)
-│   └── signify_mobilenetv2.pth
+├── front-end/                  # Web interface
+│   └── signify_app_auto_with_video.html
 │
-├── requirements.txt            # Python dependencies
-├── verify_env.py               # Quick environment check (run this first)
-├── setup_project.py            # Project folder initializer
-└── README.md
+├── Saved Models/               # Trained model weights
+│   └── best_model_mobilenet.pth
+│
+├── Environment/                # Environment setup documentation
+│   └── Local_Environment_Setup.docx
+│
+├── config.py                   # Machine-agnostic paths and constants
+├── create_necessary_folders.py # Creates project folder structure on first run
+├── verify_env.py               # Checks all dependencies are installed
+└── requirements.txt            # Python dependencies
 ```
 
 ---
 
 ## Notebooks vs Production Files
 
-This project separates **exploration/training** (notebooks) from **live application** (.py files). Understanding this distinction is important for working with the codebase.
+This project separates **exploration/training** (notebooks) from **live application** (agents + API).
 
-### Jupyter Notebooks (`notebooks/`)
+### Jupyter Notebooks (`Notebooks/`)
 
-Notebooks are for **training, experimentation, and documentation**. They are meant to be run once (or a few times) in order, and they produce artifacts like trained model weights and evaluation charts.
+Notebooks are for **training, experimentation, and documentation**. Run them sequentially to reproduce the training pipeline.
 
-- Run sequentially: `01` → `02` → `03` → ... → `08`
-- Each notebook is self-contained with markdown explanations
-- Outputs include trained `.pth` model files, confusion matrices, and accuracy plots
-- **Not** used in the live app — they are the build pipeline
+| # | Notebook | Description |
+|---|---|---|
+| 01 | `01_explore_dataset.ipynb` | Load and visualize the ASL dataset |
+| 02 | `02_preprocess.ipynb` | ⚠️ Early approach — MediaPipe landmark extraction (ANN) |
+| 03 | `03_augment.ipynb` | ⚠️ Early approach — Landmark augmentation (ANN) |
+| 04 | `04_model.ipynb` | ⚠️ Early approach — ANN architecture definition |
+| 05 | `05_train_mobilenet.ipynb` | ✅ **Final model** — MobileNetV2 training (99.83% accuracy) |
+| 06 | `06_evaluate.ipynb` | ✅ Model evaluation and confusion matrix |
+| 07 | `07_camera_test.ipynb` | ✅ Live camera inference test |
 
-### Production Files (`src/`)
+> **Note:** Notebooks 02, 03, and 04 document the early landmark-based ANN exploration. The final production model uses MobileNetV2 (notebook 05).
 
-`.py` files are for the **live inference application**. They import cleaned, reusable functions extracted from the notebooks.
+### Production Files (`Agents/` + `API/`)
 
-- `config.py` — machine-agnostic paths using `os.path.abspath`
-- `app.py` — the real-time webcam app (run this to use Signify)
-- `verify_env.py` / `setup_project.py` — setup utilities
+The agent pipeline and FastAPI server power the live application. They import the trained model and run inference in real time.
 
-> **In short:** Use notebooks to train. Use `.py` files to run the app.
+> **In short:** Use notebooks to train. Use agents + API to run the app.
 
 ---
 
@@ -110,29 +117,22 @@ Signify uses the [ASL Alphabet dataset from Kaggle](https://www.kaggle.com/datas
 
 ### Download Instructions
 
-1. Install the Kaggle CLI (already included in `requirements.txt`):
-   ```bash
-   pip install kaggle
-   ```
-
-2. Place your Kaggle API key at `~/.kaggle/kaggle.json`.
+1. Place your Kaggle API key at `~/.kaggle/kaggle.json`.
    Get it from: [https://www.kaggle.com/settings → API → Create New Token](https://www.kaggle.com/settings)
 
-3. Download and extract the dataset:
+2. Download and extract the dataset:
    ```bash
    kaggle datasets download -d grassknoted/asl-alphabet
-   unzip asl-alphabet.zip -d data/asl_alphabet/
+   unzip asl-alphabet.zip -d data/raw/kaggle_asl/
    ```
 
-4. Your `data/` folder should look like:
+3. Your data folder should look like:
    ```
-   data/
-   └── asl_alphabet/
-       ├── asl_alphabet_train/   ← 87,000 training images
-       └── asl_alphabet_test/    ← 29 test images
+   data/raw/kaggle_asl/ASL_Alphabet_Dataset/
+   └── asl_alphabet_train/   ← 87,000 training images (29 classes)
    ```
 
-> The `data/` and `models/` directories are listed in `.gitignore` and are **not committed to the repository**.
+> The dataset is NOT committed to this repository — download it from Kaggle using the instructions above.
 
 ---
 
@@ -144,6 +144,7 @@ Signify uses the [ASL Alphabet dataset from Kaggle](https://www.kaggle.com/datas
 - Python 3.10
 - NVIDIA GPU with CUDA 12.1 support (recommended; CPU fallback available)
 - Git
+- [Ollama](https://ollama.com/download) — local LLM runtime
 
 ### Step-by-step Setup
 
@@ -161,7 +162,11 @@ conda activate signify
 
 **3. Install PyTorch with CUDA support**
 ```bash
-pip install torch==2.5.1+cu121 torchvision==0.20.1+cu121 --index-url https://download.pytorch.org/whl/cu121
+# GPU (recommended):
+pip install torch==2.5.1+cu121 torchvision==0.20.1+cu121 torchaudio==2.5.1+cu121 --index-url https://download.pytorch.org/whl/cu121
+
+# CPU only (fallback):
+pip install torch==2.5.1 torchvision==0.20.1 torchaudio==2.5.1
 ```
 
 **4. Install remaining dependencies**
@@ -169,7 +174,19 @@ pip install torch==2.5.1+cu121 torchvision==0.20.1+cu121 --index-url https://dow
 pip install -r requirements.txt
 ```
 
-**5. Verify your environment**
+**5. Install Ollama and pull phi3:mini**
+```bash
+# Download and install Ollama from https://ollama.com/download
+# Then pull the model:
+ollama pull phi3:mini
+```
+
+**6. Create project folders**
+```bash
+python create_necessary_folders.py
+```
+
+**7. Verify your environment**
 ```bash
 python verify_env.py
 ```
@@ -179,60 +196,60 @@ Expected output:
 ✅ Python       3.10.x
 ✅ PyTorch      2.5.1+cu121
 ✅ CUDA         Available — NVIDIA Quadro T1000
-✅ OpenCV       4.x.x
+✅ OpenCV       4.9.0.80
+✅ MediaPipe    0.10.14
+✅ Whisper      ready
+✅ Ollama       ready
 ✅ All checks passed. Environment is ready.
 ```
-
-**6. Initialize the project folder structure**
-```bash
-python setup_project.py
-```
-
----
-
-## Running the Notebooks
-
-Run notebooks **in order**. Each notebook builds on the outputs of the previous one.
-
-> Activate your conda environment before launching Jupyter:
-> ```bash
-> conda activate signify
-> jupyter notebook
-> ```
-
-| # | Notebook | Description |
-|---|---|---|
-| 01 | `01_explore_dataset.ipynb` | Load and visualize the ASL dataset |
-| 02 | `02_preprocess_data.ipynb` | Resize, normalize, augment images |
-| 03 | `03_build_model.ipynb` | Define MobileNetV2 architecture |
-| 04 | `04_train_model.ipynb` | Train the model, save weights |
-| 05 | `05_evaluate_model.ipynb` | Accuracy, loss curves |
-| 06 | `06_confusion_matrix.ipynb` | Per-class confusion matrix |
-| 07 | `07_test_inference.ipynb` | Test on static images |
-| 08 | `08_export_model.ipynb` | Export final model for the app |
 
 ---
 
 ## Running the App
 
-After completing all notebooks and exporting the model:
-
+**1. Make sure Ollama is running:**
 ```bash
-conda activate signify
-python src/app.py
+ollama serve
 ```
 
-A webcam window will open. Hold an ASL hand sign in front of the camera and Signify will display the predicted letter in real time.
+**2. Start the FastAPI server:**
+```bash
+conda activate signify
+uvicorn API.main:app --host 0.0.0.0 --port 8000 --reload
+```
 
-Press `Q` to quit.
+**3. Open the web app:**
+```
+http://localhost:8000/app
+```
+
+**4. Interactive API docs:**
+```
+http://localhost:8000/docs
+http://localhost:8000/redoc
+```
+
+---
+
+## API Endpoints
+
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | `/` | Server status and pipeline info |
+| GET | `/health` | Health check |
+| GET | `/app` | Serve the web interface |
+| POST | `/frame` | Submit a camera frame for inference |
+| POST | `/generate` | Convert accumulated letters to a sentence via phi3:mini |
+| POST | `/speak` | Speak the generated sentence aloud |
+| POST | `/reset` | Clear all buffers |
+| GET | `/state` | Get current accumulated text state |
 
 ---
 
 ## Team
 
-**Fanshawe College — School of Information Technology**
-AIM Program — Capstone 2026, Group 7
+**Group 7**
 
 ---
 
-*Built with PyTorch, OpenCV, and a lot of hand signs.*
+*Built with PyTorch, MediaPipe, FastAPI, and a lot of hand signs.*
