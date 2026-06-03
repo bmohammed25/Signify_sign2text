@@ -206,8 +206,8 @@ python verify_env.py
 Expected output:
 ```
 ✅ Python       3.10.x
-✅ PyTorch      2.5.1+cu121
-✅ CUDA         Available — NVIDIA Quadro T1000
+✅ PyTorch      2.5.1+cu121  (or CPU version)
+✅ CUDA         Available — <your GPU name>  (or Not available — CPU mode)
 ✅ OpenCV       4.9.0.80
 ✅ MediaPipe    0.10.14
 ✅ Whisper      ready
