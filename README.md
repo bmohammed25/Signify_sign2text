@@ -115,6 +115,18 @@ The agent pipeline and FastAPI server power the live application. They import th
 
 Signify uses the [ASL Alphabet dataset from Kaggle](https://www.kaggle.com/datasets/grassknoted/asl-alphabet).
 
+### Citation
+
+If you use this project or dataset, please cite:
+
+@misc{asl_alphabet_kaggle,
+  author    = {Akash},
+  title     = {ASL Alphabet},
+  year      = {2018},
+  publisher = {Kaggle},
+  url       = {https://www.kaggle.com/datasets/grassknoted/asl-alphabet}
+}
+
 ### Download Instructions
 
 1. Place your Kaggle API key at `~/.kaggle/kaggle.json`.
@@ -243,12 +255,6 @@ http://localhost:8000/redoc
 | POST | `/speak` | Speak the generated sentence aloud |
 | POST | `/reset` | Clear all buffers |
 | GET | `/state` | Get current accumulated text state |
-
----
-
-## Team
-
-**Group 7**
 
 ---
 
