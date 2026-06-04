@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Signify — Auto</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap');
+
+  :root {
+    --bg: #0d0d0f;
+    --surface: #15151a;
+    --border: #2a2a35;
+    --accent: #00e5a0;
+    --accent2: #7c6aff;
+    --warn: #ff6b6b;
+    --text: #e8e8f0;
+    --muted: #6a6a80;
+    --radius: 10px;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 24px 16px 48px;
+  }
+
+  header {
+    width: 100%;
+    max-width: 860px;
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 28px;
+  }
+
+  h1 { font-size: 2rem; font-weight: 800; letter-spacing: -1px; color: var(--accent); }
+
+  .badge {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    background: var(--border);
+    color: var(--muted);
+    padding: 3px 8px;
+    border-radius: 20px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    width: 100%;
+    max-width: 860px;
+    margin-bottom: 16px;
+  }
+
+  .mode-toggle {
+    display: flex;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    width: fit-content;
+    margin-bottom: 16px;
+  }
+
+  .mode-btn {
+    padding: 8px 20px;
+    font-family: 'Syne', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 700;
+    border: none;
+    cursor: pointer;
+    background: transparent;
+    color: var(--muted);
+    transition: background 0.2s, color 0.2s;
+  }
+  .mode-btn.active { background: var(--accent2); color: #fff; }
+
+  .video-wrapper {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16/9;
+    background: #08080b;
+    border-radius: 8px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  #videoEl, #fileVideoEl {
+    width: 100%; height: 100%;
+    object-fit: contain;
+    display: block;
+  }
+  #fileVideoEl { display: none; }
+
+  canvas#overlay {
+    position: absolute; top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+  }
+
+  .placeholder-text {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.8rem;
+    color: var(--muted);
+    position: absolute;
+  }
+
+  /* ── Countdown bar ── */
+  .countdown-wrap {
+    margin-top: 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .countdown-track {
+    flex: 1;
+    height: 8px;
+    background: var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .countdown-fill {
+    height: 100%;
+    width: 0%;
+    background: var(--accent);
+    border-radius: 4px;
+    transition: width 0.2s linear;
+  }
+
+  .countdown-fill.active { background: var(--accent2); }
+
+  #countdownLabel {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--muted);
+    width: 80px;
+    text-align: right;
+  }
+
+  /* ── State badge ── */
+  .state-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-top: 10px;
+  }
+
+  .state-badge.waiting   { background: #1a1a25; color: var(--muted); border: 1px solid var(--border); }
+  .state-badge.signing   { background: #0d2e1f; color: var(--accent); border: 1px solid var(--accent); }
+  .state-badge.countdown { background: #1a1030; color: var(--accent2); border: 1px solid var(--accent2); }
+  .state-badge.generating{ background: #1a1030; color: var(--accent2); border: 1px solid var(--accent2); }
+  .state-badge.speaking  { background: #0d2e1f; color: var(--accent); border: 1px solid var(--accent); }
+
+  .dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: currentColor;
+    animation: blink 1s infinite;
+  }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
+
+  /* ── Letter / text ── */
+  .letter-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-top: 14px;
+  }
+
+  .letter-box {
+    width: 64px; height: 64px;
+    border: 2px solid var(--accent);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 2rem; font-weight: 800;
+    color: var(--accent);
+    font-family: 'Space Mono', monospace;
+    flex-shrink: 0;
+    transition: transform 0.1s;
+  }
+  .letter-box.pulse { transform: scale(1.15); }
+
+  .raw-text-box {
+    flex: 1;
+    background: #08080b;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-family: 'Space Mono', monospace;
+    font-size: 1rem;
+    color: var(--text);
+    min-height: 48px;
+    word-break: break-all;
+    letter-spacing: 2px;
+  }
+
+  .label {
+    font-size: 0.7rem; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 2px;
+    color: var(--muted); margin-bottom: 8px;
+    font-family: 'Space Mono', monospace;
+  }
+
+  #sentenceBox {
+    background: #08080b;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px;
+    font-size: 1.1rem;
+    color: var(--text);
+    min-height: 56px;
+    line-height: 1.5;
+  }
+
+  /* ── File picker ── */
+  .file-pick-area {
+    display: none;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+  .file-pick-area.visible { display: flex; }
+
+  .file-input-row { display: flex; align-items: center; gap: 12px; }
+
+  input[type="file"] { display: none; }
+
+  .pick-btn {
+    padding: 9px 18px;
+    background: var(--border); color: var(--text);
+    border: none; border-radius: 6px;
+    font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.85rem;
+    cursor: pointer; transition: background 0.2s;
+  }
+  .pick-btn:hover { background: #3a3a50; }
+
+  #fileNameLabel {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.78rem; color: var(--muted);
+  }
+
+  .speed-row { display: flex; align-items: center; gap: 10px; }
+  .speed-row label { font-family: 'Space Mono', monospace; font-size: 0.75rem; color: var(--muted); white-space: nowrap; }
+  input[type="range"] { accent-color: var(--accent2); flex: 1; }
+  #speedVal { font-family: 'Space Mono', monospace; font-size: 0.75rem; color: var(--accent2); width: 36px; }
+
+  /* ── Buttons ── */
+  .btn-row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 4px; }
+
+  button.action {
+    padding: 10px 22px; border-radius: 8px; border: none;
+    font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.9rem;
+    cursor: pointer; transition: opacity 0.2s, transform 0.1s;
+  }
+  button.action:active { transform: scale(0.97); }
+  button.action:disabled { opacity: 0.35; cursor: not-allowed; }
+
+  .btn-green  { background: var(--accent);  color: #000; }
+  .btn-red    { background: var(--warn);    color: #fff; }
+  .btn-grey   { background: var(--border);  color: var(--text); }
+
+  #statusBar {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.75rem; color: var(--muted);
+    margin-top: 6px; min-height: 18px;
+  }
+  #statusBar.ok  { color: var(--accent); }
+  #statusBar.err { color: var(--warn); }
+
+  .conf-row { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
+  .conf-track { flex: 1; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
+  .conf-fill { height: 100%; width: 0%; background: var(--accent); border-radius: 3px; transition: width 0.3s; }
+  #confLabel { font-family: 'Space Mono', monospace; font-size: 0.7rem; color: var(--muted); width: 38px; text-align: right; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Signify</h1>
+  <span class="badge">Auto</span>
+</header>
+
+<!-- Input source -->
+<div class="card">
+  <div class="label">Input Source</div>
+  <div class="mode-toggle">
+    <button class="mode-btn active" id="btnLive" onclick="setMode('live')">📷 Live Camera</button>
+    <button class="mode-btn" id="btnVideo" onclick="setMode('video')">🎞 Video File</button>
+  </div>
+
+  <!-- File picker -->
+  <div class="file-pick-area" id="filePickArea">
+    <div class="file-input-row">
+      <button class="pick-btn" onclick="document.getElementById('fileInput').click()">Browse…</button>
+      <span id="fileNameLabel">No file selected</span>
+      <input type="file" id="fileInput" accept="video/*" onchange="onFileSelected(event)" />
+    </div>
+    <div class="speed-row">
+      <label>Frame delay:</label>
+      <input type="range" id="speedSlider" min="30" max="500" value="100" oninput="updateSpeed(this.value)" />
+      <span id="speedVal">100ms</span>
+    </div>
+  </div>
+
+  <!-- Video area -->
+  <div class="video-wrapper">
+    <video id="videoEl" autoplay playsinline muted></video>
+    <video id="fileVideoEl" playsinline muted></video>
+    <canvas id="overlay"></canvas>
+    <span class="placeholder-text" id="placeholderText">Camera not started</span>
+  </div>
+
+  <!-- Confidence -->
+  <div class="conf-row">
+    <span class="label" style="margin:0">Confidence</span>
+    <div class="conf-track"><div class="conf-fill" id="confFill"></div></div>
+    <span id="confLabel">—</span>
+  </div>
+
+  <!-- Letter + raw text -->
+  <div class="letter-row">
+    <div>
+      <div class="label">Detected</div>
+      <div class="letter-box" id="letterBox">—</div>
+    </div>
+    <div style="flex:1">
+      <div class="label">Accumulated Letters</div>
+      <div class="raw-text-box" id="rawTextBox"></div>
+    </div>
+  </div>
+
+  <!-- Countdown bar -->
+  <div class="countdown-wrap">
+    <span class="label" style="margin:0">Auto-trigger</span>
+    <div class="countdown-track">
+      <div class="countdown-fill" id="countdownFill"></div>
+    </div>
+    <span id="countdownLabel">—</span>
+  </div>
+
+  <!-- State badge -->
+  <div class="state-badge waiting" id="stateBadge">
+    <span class="dot"></span>
+    <span id="stateText">Waiting</span>
+  </div>
+
+  <!-- Controls -->
+  <div class="btn-row" style="margin-top:14px">
+    <button class="action btn-green" id="btnStart" onclick="startInput()">▶ Start Camera</button>
+    <button class="action btn-grey"  id="btnStop"  onclick="stopInput()" disabled>■ Stop</button>
+    <button class="action btn-grey"  id="btnPause" onclick="togglePause()" disabled style="display:none">⏸ Pause</button>
+    <button class="action btn-grey"  id="btnVoice" onclick="toggleVoice()">🔇 Voice Off</button>
+    <button class="action btn-grey"  id="btnSpeakNow" onclick="speakNow()" disabled>🔊 Speak Now</button>
+    <button class="action btn-red"   id="btnReset" onclick="resetPipeline()">↺ Reset Pipeline</button>
+  </div>
+
+  <div id="statusBar">Ready.</div>
+</div>
+
+<!-- Sentence -->
+<div class="card">
+  <div class="label">Generated Sentence</div>
+  <div id="sentenceBox">—</div>
+</div>
+
+<script>
+const API = 'http://localhost:8000';
+
+// ── Timings ──
+const SILENCE_MS   = 800;    // ms of no new letters → trigger speak
+const RESET_DELAY  = 2000;   // ms after speaking → auto-reset
+const TICK_MS      = 200;    // countdown update interval
+
+// ── State machine ──
+// 'waiting' | 'signing' | 'countdown' | 'generating' | 'speaking'
+let appState = 'waiting';
+let streaming = false;
+let frameIntervalId = null;
+let currentMode = 'live';
+let frameDelay = 100;
+let videoObjectURL = null;
+let voiceEnabled = false;  // voice OFF by default
+let videoPaused  = false;  // video pause state
+
+// Countdown tracking
+let lastLetterTime = 0;
+let countdownTimer  = null;
+let countdownFrac   = 0;
+let lastRawLength   = 0;  // track raw text growth to detect new letters
+
+const videoEl     = document.getElementById('videoEl');
+const fileVideoEl = document.getElementById('fileVideoEl');
+const overlay     = document.getElementById('overlay');
+const letterBox   = document.getElementById('letterBox');
+const rawTextBox  = document.getElementById('rawTextBox');
+const sentenceBox = document.getElementById('sentenceBox');
+const statusBar   = document.getElementById('statusBar');
+const confFill    = document.getElementById('confFill');
+const confLabel   = document.getElementById('confLabel');
+const cdFill      = document.getElementById('countdownFill');
+const cdLabel     = document.getElementById('countdownLabel');
+const stateBadge  = document.getElementById('stateBadge');
+const stateText   = document.getElementById('stateText');
+const placeholder = document.getElementById('placeholderText');
+
+// ── Mode ──
+function setMode(mode) {
+  if (mode === 'video' && currentMode === 'live' && streaming) stopInput();
+  currentMode = mode;
+  document.getElementById('btnLive').classList.toggle('active', mode === 'live');
+  document.getElementById('btnVideo').classList.toggle('active', mode === 'video');
+  document.getElementById('filePickArea').classList.toggle('visible', mode === 'video');
+  document.getElementById('btnStart').textContent = mode === 'live' ? '▶ Start Camera' : '▶ Start Video';
+  document.getElementById('btnPause').style.display = mode === 'video' ? 'inline-flex' : 'none';
+}
+
+function updateSpeed(val) {
+  frameDelay = parseInt(val);
+  document.getElementById('speedVal').textContent = val + 'ms';
+}
+
+function onFileSelected(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  document.getElementById('fileNameLabel').textContent = file.name;
+  if (videoObjectURL) URL.revokeObjectURL(videoObjectURL);
+  videoObjectURL = URL.createObjectURL(file);
+  fileVideoEl.src = videoObjectURL;
+  setStatus('File loaded: ' + file.name, 'ok');
+}
+
+// ── Start / Stop ──
+async function startInput() {
+  if (streaming) return;
+  placeholder.style.display = 'none';
+
+  if (currentMode === 'live') {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      videoEl.srcObject = stream;
+      videoEl.style.display = 'block';
+      fileVideoEl.style.display = 'none';
+      await videoEl.play();
+    } catch(e) {
+      setStatus('Camera error: ' + e.message, 'err');
+      return;
+    }
+  } else {
+    if (!fileVideoEl.src) { setStatus('Please select a video file first.', 'err'); return; }
+    fileVideoEl.style.display = 'block';
+    videoEl.style.display = 'none';
+    fileVideoEl.currentTime = 0;
+    await fileVideoEl.play();
+  }
+
+  streaming = true;
+  document.getElementById('btnStart').disabled = true;
+  document.getElementById('btnStop').disabled = false;
+  if (currentMode === 'video') document.getElementById('btnPause').disabled = false;
+  setState('waiting');
+  setStatus('Streaming…', 'ok');
+  frameIntervalId = setInterval(captureAndSend, frameDelay);
+}
+
+function stopInput() {
+  streaming = false;
+  clearInterval(frameIntervalId);
+  stopCountdown();
+  videoEnded = false;
+  videoPaused = false;
+
+  if (currentMode === 'live') {
+    const stream = videoEl.srcObject;
+    if (stream) stream.getTracks().forEach(t => t.stop());
+    videoEl.srcObject = null;
+  } else {
+    fileVideoEl.pause();
+  }
+
+  document.getElementById('btnStart').disabled = false;
+  document.getElementById('btnStop').disabled = true;
+  const pauseBtn = document.getElementById('btnPause');
+  pauseBtn.disabled = true;
+  pauseBtn.textContent = '⏸ Pause';
+  pauseBtn.className = 'action btn-grey';
+  setState('waiting');
+  setStatus('Stopped.', '');
+}
+
+// ── Frame capture ──
+function getActiveVideo() { return currentMode === 'live' ? videoEl : fileVideoEl; }
+
+async function captureAndSend() {
+  if (!streaming) return;
+  if (appState === 'generating' || appState === 'speaking') return;
+
+  const vid = getActiveVideo();
+  if (vid.readyState < 2) return;
+
+  if (overlay.width !== vid.videoWidth || overlay.height !== vid.videoHeight) {
+    overlay.width  = vid.videoWidth  || 640;
+    overlay.height = vid.videoHeight || 480;
+  }
+
+  const offscreen = document.createElement('canvas');
+  offscreen.width  = overlay.width;
+  offscreen.height = overlay.height;
+  offscreen.getContext('2d').drawImage(vid, 0, 0);
+
+  offscreen.toBlob(async (blob) => {
+    if (!blob) return;
+    const fd = new FormData();
+    fd.append('file', blob, 'frame.jpg');
+    try {
+      const res = await fetch(`${API}/frame`, { method: 'POST', body: fd });
+      if (!res.ok) return;
+      const data = await res.json();
+      handleFrameResponse(data);
+    } catch(_) {}
+  }, 'image/jpeg', 0.85);
+}
+
+function handleFrameResponse(data) {
+  const letter = data.letter;
+  const conf   = data.confidence != null ? Math.round(data.confidence * 100) : null;
+
+  // Update letter display
+  if (letter && letter !== '—' && letter !== 'nothing') {
+    if (letterBox.textContent !== letter) {
+      letterBox.textContent = letter;
+      letterBox.classList.add('pulse');
+      setTimeout(() => letterBox.classList.remove('pulse'), 120);
+    }
+  }
+
+  // Confidence bar
+  if (conf != null) {
+    confFill.style.width = conf + '%';
+    confLabel.textContent = conf + '%';
+    confFill.style.background = conf >= 70 ? 'var(--accent)' : conf >= 40 ? '#f5c542' : 'var(--warn)';
+  }
+
+  // Raw text — detect growth
+  if (data.raw_text != null) {
+    rawTextBox.textContent = data.raw_text;
+    const newLen = data.raw_text.length;
+    if (newLen > lastRawLength) {
+      // New letter was added
+      lastRawLength = newLen;
+      lastLetterTime = Date.now();
+      if (appState === 'waiting' || appState === 'countdown') setState('signing');
+      startCountdown();
+    }
+  }
+}
+
+// ── Countdown ──
+function startCountdown() {
+  stopCountdown();
+  countdownTimer = setInterval(tickCountdown, TICK_MS);
+}
+
+function stopCountdown() {
+  clearInterval(countdownTimer);
+  countdownTimer = null;
+  cdFill.style.width = '0%';
+  cdLabel.textContent = '—';
+  cdFill.classList.remove('active');
+}
+
+function tickCountdown() {
+  if (appState === 'generating' || appState === 'speaking') {
+    stopCountdown(); return;
+  }
+
+  const elapsed = Date.now() - lastLetterTime;
+  const raw = rawTextBox.textContent.trim();
+
+  if (!raw) { stopCountdown(); setState('waiting'); return; }
+
+  if (elapsed >= SILENCE_MS) {
+    stopCountdown();
+    triggerAutoGenerate();
+    return;
+  }
+
+  const frac = elapsed / SILENCE_MS;
+  cdFill.style.width = (frac * 100) + '%';
+  cdFill.classList.add('active');
+  const remaining = ((SILENCE_MS - elapsed) / 1000).toFixed(1);
+  cdLabel.textContent = remaining + 's';
+  setState('countdown');
+}
+
+// ── Pause toggle (video only) ──
+function togglePause() {
+  if (currentMode !== 'video') return;
+  videoPaused = !videoPaused;
+  const btn = document.getElementById('btnPause');
+  if (videoPaused) {
+    fileVideoEl.pause();
+    clearInterval(frameIntervalId);
+    btn.textContent = '▶ Resume';
+    btn.className = 'action btn-green';
+    setStatus('Paused.', '');
+  } else {
+    fileVideoEl.play();
+    frameIntervalId = setInterval(captureAndSend, frameDelay);
+    btn.textContent = '⏸ Pause';
+    btn.className = 'action btn-grey';
+    setStatus('Resumed.', 'ok');
+  }
+}
+
+// ── Voice toggle ──
+function toggleVoice() {
+  voiceEnabled = !voiceEnabled;
+  const btn = document.getElementById('btnVoice');
+  btn.textContent = voiceEnabled ? '🔊 Voice On' : '🔇 Voice Off';
+  btn.className   = voiceEnabled ? 'action btn-green' : 'action btn-grey';
+}
+
+async function speakNow() {
+  const sentence = sentenceBox.textContent.trim();
+  const text = (sentence && sentence !== '—') ? sentence : rawTextBox.textContent.trim();
+  if (!text) return;
+  document.getElementById('btnSpeakNow').disabled = true;
+  setState('speaking');
+  setStatus('Speaking…', '');
+  try {
+    await fetch(`${API}/speak?text=${encodeURIComponent(text)}`, { method: 'POST' });
+    setStatus('Done.', 'ok');
+  } catch(e) {
+    setStatus('Speak error: ' + e.message, 'err');
+  }
+  setState('waiting');
+  document.getElementById('btnSpeakNow').disabled = false;
+}
+
+// ── Auto generate sentence then speak ──
+async function triggerAutoGenerate() {
+  const raw = rawTextBox.textContent.trim();
+  if (!raw) return;
+
+  // Step 1 — call /generate to get LLM sentence
+  setState('generating');
+  setStatus('Generating sentence…', '');
+  let sentence = raw; // fallback to raw if LLM fails
+
+  try {
+    const res = await fetch(`${API}/generate`, { method: 'POST' });
+    if (res.ok) {
+      const data = await res.json();
+      if (data.success && data.sentence) {
+        sentence = data.sentence;
+      }
+    }
+  } catch(e) {
+    setStatus('LLM unavailable — using raw letters.', '');
+  }
+
+  // Step 2 — display the sentence
+  sentenceBox.textContent = sentence;
+  document.getElementById('btnSpeakNow').disabled = false;
+
+  // If voice is ON — auto speak
+  if (voiceEnabled) {
+    setState('speaking');
+    setStatus('Speaking…', '');
+    try {
+      await fetch(`${API}/speak?text=${encodeURIComponent(sentence)}`, { method: 'POST' });
+      setStatus('Listening for next sign…', 'ok');
+      // Reset letter buffer but keep sentence visible
+      await fetch(`${API}/reset`, { method: 'POST' });
+      rawTextBox.textContent = '';
+      setState('waiting');
+    } catch(e) {
+      setStatus('Speak error: ' + e.message, 'err');
+      setState('waiting');
+    }
+  } else {
+    setStatus('Sentence ready. Press Speak Now to hear it.', 'ok');
+    // Reset letter buffer but keep sentence visible
+    await fetch(`${API}/reset`, { method: 'POST' });
+    rawTextBox.textContent = '';
+    setState('waiting');
+  }
+}
+
+let videoEnded = false;
+
+async function autoReset() {
+  try { await fetch(`${API}/reset`, { method: 'POST' }); } catch(_) {}
+  rawTextBox.textContent = '';
+  letterBox.textContent = '—';
+  confFill.style.width = '0%';
+  confLabel.textContent = '—';
+  lastLetterTime = 0;
+  lastRawLength = 0;
+  setState('waiting');
+  setStatus('Ready for next session.', 'ok');
+  if (currentMode === 'video' && videoEnded) { videoEnded = false; stopInput(); }
+}
+
+async function resetPipeline() {
+  stopCountdown();
+  try { await fetch(`${API}/reset`, { method: 'POST' }); } catch(_) {}
+  rawTextBox.textContent = '';
+  sentenceBox.textContent = '—';
+  letterBox.textContent = '—';
+  confFill.style.width = '0%';
+  confLabel.textContent = '—';
+  lastLetterTime = 0;
+  lastRawLength = 0;
+  videoEnded = false;
+  setState('waiting');
+  setStatus('Pipeline reset.', 'ok');
+}
+
+// ── State display ──
+function setState(s) {
+  appState = s;
+  stateBadge.className = 'state-badge ' + s;
+  const labels = {
+    waiting:    'Waiting',
+    signing:    'Signing…',
+    countdown:  'Counting down…',
+    generating: 'Generating…',
+    speaking:   'Speaking…',
+  };
+  stateText.textContent = labels[s] || s;
+}
+
+function setStatus(msg, type) {
+  statusBar.textContent = msg;
+  statusBar.className = type || '';
+}
+
+// Handle video end
+fileVideoEl.addEventListener('ended', () => {
+  if (streaming && appState !== 'generating' && appState !== 'speaking') {
+    videoEnded = true;
+    // Wait 1s for last frames to be processed before triggering
+    setTimeout(() => {
+      const raw = rawTextBox.textContent.trim();
+      if (raw) {
+        stopCountdown();
+        triggerAutoGenerate();
+      } else {
+        setStatus('Video ended — no letters detected.', 'err');
+        setState('waiting');
+      }
+    }, 1000);
+  } else if (streaming) {
+    // video ended while speaking/generating — just mark it
+    videoEnded = true;
+  }
+});
+</script>
+</body>
+</html>
