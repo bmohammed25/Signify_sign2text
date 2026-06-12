@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Signify_sign2text — Python dependencies
 # Pinned to the verified training environment:
 #   Python 3.10.20 | CUDA 12.1 | Windows 11
@@ -31,3 +32,44 @@ ipykernel==6.29.5
 tqdm==4.66.5
 matplotlib==3.9.2
 scikit-learn==1.5.2
+=======
+# ── Deep Learning ─────────────────────────────────
+# NOTE: Install PyTorch manually BEFORE running pip install -r requirements.txt
+# GPU:  pip install torch==2.5.1+cu121 torchvision==0.20.1+cu121 torchaudio==2.5.1+cu121 --index-url https://download.pytorch.org/whl/cu121
+# CPU:  pip install torch==2.5.1 torchvision==0.20.1 torchaudio==2.5.1
+torch==2.5.1
+torchvision==0.20.1
+torchaudio==2.5.1
+
+# ── Core Computer Vision ──────────────────────────
+opencv-python==4.9.0.80
+mediapipe==0.10.14
+
+# ── Data & Math ───────────────────────────────────
+numpy==1.26.4
+scikit-learn==1.4.2
+matplotlib==3.8.4
+seaborn==0.13.2
+Pillow==10.3.0
+
+# ── Agent Layer ───────────────────────────────────
+google-adk==1.33.0
+
+# ── Speech Layer ──────────────────────────────────
+SpeechRecognition==3.10.4
+gTTS==2.5.1
+pygame==2.5.2
+pydub==0.25.1
+
+# ── NLP & Language ────────────────────────────────
+transformers==4.41.2
+sentencepiece==0.2.0
+
+# ── Dataset & Kaggle ──────────────────────────────
+kaggle==1.6.14
+kagglehub==0.2.9
+
+# ── Utilities ─────────────────────────────────────
+python-jose==3.3.0
+aiofiles==23.2.1
+>>>>>>> 34100ffac8e0d8e4630374a3a240c1a2b2cb7b15

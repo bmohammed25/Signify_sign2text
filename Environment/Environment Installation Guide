@@ -1,0 +1,17 @@
+Environment Setup — Complete List
+1.	Install Anaconda or Miniconda
+2.	Create a new conda environment with Python 3.10
+3.	Activate the environment
+4.	Install PyTorch with CUDA 12.1 support
+5.	Install core computer vision libraries — OpenCV and MediaPipe
+6.	Install training libraries — NumPy, scikit-learn, Matplotlib, Seaborn, Pillow, tqdm
+7.	Install API libraries — FastAPI, Uvicorn, python-multipart
+8.	Install speech libraries — SpeechRecognition, gTTS, pygame, pydub
+9.	Install OpenAI Whisper from GitHub source
+10.	Install dataset tools — Kaggle API, kagglehub
+11.	Install utility libraries — python-dotenv, aiofiles
+12.	Install Ollama from official website — Windows installer
+13.	Pull lightweight LLM model via Ollama — recommended llama3.2 or phi3-mini
+14.	Install Ollama Python client library
+15.	Verify GPU is recognized by PyTorch
+16.	Verify all libraries imported successfully

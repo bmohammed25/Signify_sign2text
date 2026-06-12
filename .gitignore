@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Large data — lives on Hugging Face
 data/landmarks/
 *.npy
@@ -11,7 +12,82 @@ checkpoints/
 __pycache__/
 *.pyc
 .ipynb_checkpoints/
+=======
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+eggs/
+parts/
+var/
+sdist/
+develop-eggs/
+.installed.cfg
+lib/
+lib64/
+.Python
+pip-log.txt
+pip-delete-this-directory.txt
+htmlcov/
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+.pytest_cache/
+
+# Virtual environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+*.ipynb_checkpoints/
+
+# VS Code
+.vscode/
+
+# PyCharm / JetBrains
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# Spyder
+.spyderproject.db
+.spyproject
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+>>>>>>> 34100ffac8e0d8e4630374a3a240c1a2b2cb7b15
 
 # OS
 .DS_Store
 Thumbs.db
+<<<<<<< HEAD
+=======
+desktop.ini
+
+# Project-specific
+SignLanguageDataset/verified_videos/*.mp4
+SignLanguageDataset/output/**/*.npy
+
+# Signify — dataset and model weights
+data/
+!data/.gitkeep
+>>>>>>> 34100ffac8e0d8e4630374a3a240c1a2b2cb7b15
