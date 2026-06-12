@@ -145,3 +145,117 @@ If you use this project or dataset, please cite:
    ```
 
 > The dataset is NOT committed to this repository — download it from Kaggle using the instructions above.
+
+---
+
+## Environment Setup
+
+### Prerequisites
+
+- [Anaconda](https://www.anaconda.com/download) or Miniconda
+- Python 3.10
+- NVIDIA GPU with CUDA 12.1 support (recommended; CPU fallback available)
+- Git
+- [Ollama](https://ollama.com/download) — local LLM runtime
+
+### Step-by-step Setup
+
+**1. Clone the repository**
+```bash
+git clone https://github.com/your-org/signify.git
+cd signify
+```
+
+**2. Create the conda environment**
+```bash
+conda create -n signify python=3.10 -y
+conda activate signify
+```
+
+**3. Install PyTorch with CUDA support**
+```bash
+# GPU (recommended):
+pip install torch==2.5.1+cu121 torchvision==0.20.1+cu121 torchaudio==2.5.1+cu121 --index-url https://download.pytorch.org/whl/cu121
+
+# CPU only (fallback):
+pip install torch==2.5.1 torchvision==0.20.1 torchaudio==2.5.1
+```
+
+**4. Install remaining dependencies**
+```bash
+pip install -r requirements.txt
+```
+
+**5. Install Ollama and pull phi3:mini**
+```bash
+# Download and install Ollama from https://ollama.com/download
+# Then pull the model:
+ollama pull phi3:mini
+```
+
+**6. Create project folders**
+```bash
+python create_necessary_folders.py
+```
+
+**7. Verify your environment**
+```bash
+python verify_env.py
+```
+
+Expected output:
+```
+✅ Python       3.10.x
+✅ PyTorch      2.5.1+cu121
+✅ CUDA         Available — NVIDIA Quadro T1000
+✅ OpenCV       4.9.0.80
+✅ MediaPipe    0.10.14
+✅ Whisper      ready
+✅ Ollama       ready
+✅ All checks passed. Environment is ready.
+```
+
+---
+
+## Running the App
+
+**1. Make sure Ollama is running:**
+```bash
+ollama serve
+```
+
+**2. Start the FastAPI server:**
+```bash
+conda activate signify
+uvicorn API.main:app --host 0.0.0.0 --port 8000 --reload
+```
+
+**3. Open the web app:**
+```
+http://localhost:8000/app
+```
+
+**4. Interactive API docs:**
+```
+http://localhost:8000/docs
+http://localhost:8000/redoc
+```
+
+---
+
+## API Endpoints
+
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | `/` | Server status and pipeline info |
+| GET | `/health` | Health check |
+| GET | `/app` | Serve the web interface |
+| POST | `/frame` | Submit a camera frame for inference |
+| POST | `/generate` | Convert accumulated letters to a sentence via phi3:mini |
+| POST | `/speak` | Speak the generated sentence aloud |
+| POST | `/reset` | Clear all buffers |
+| GET | `/state` | Get current accumulated text state |
+
+---
+
+*Built with PyTorch, MediaPipe, FastAPI, and a lot of hand signs.*
