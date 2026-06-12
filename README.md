@@ -79,6 +79,8 @@ Signify/
 ├── create_necessary_folders.py # Creates project folder structure on first run
 ├── verify_env.py               # Checks all dependencies are installed
 └── requirements.txt            # Python dependencies
+│
+│
 ├── word_model/           # new
 │   ├── src/model_b.py
 │   ├── notebooks/train_signify_lstm.ipynb
