@@ -1,0 +1,17 @@
+# Large data — lives on Hugging Face
+data/landmarks/
+*.npy
+
+# Training outputs
+checkpoints/
+*.pt
+*.pth
+
+# Python / Jupyter
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+# OS
+.DS_Store
+Thumbs.db
